@@ -1,0 +1,153 @@
+{
+  "resource": "/templates/{idTemplate}/pdf",
+  "path": "/templates/name/pdf",
+  "httpMethod": "GET",
+  "headers": {
+      "Accept": "*/*",
+      "Accept-Encoding": "gzip, deflate",
+      "Authorization": "Bearer test",
+      "Cache-Control": "no-cache",
+      "CloudFront-Forwarded-Proto": "https",
+      "CloudFront-Is-Desktop-Viewer": "true",
+      "CloudFront-Is-Mobile-Viewer": "false",
+      "CloudFront-Is-SmartTV-Viewer": "false",
+      "CloudFront-Is-Tablet-Viewer": "false",
+      "CloudFront-Viewer-Country": "AR",
+      "Content-Type": "text/html",
+      "Host": "pdujhnan4l.execute-api.us-east-1.amazonaws.com",
+      "Postman-Token": "ee9130c9-673e-4875-acf5-ef575c74b1cb",
+      "User-Agent": "PostmanRuntime/7.19.0",
+      "Via": "1.1 b463298bf3a0448826c5d55c212abc61.cloudfront.net (CloudFront)",
+      "X-Amz-Cf-Id": "qZlX6G1K9vSfvj108_eozHm5xCdgGzR7xBe9ntumqnFPKAH80vpUvg==",
+      "X-Amzn-Trace-Id": "Root=1-5dd1acab-04c419ceaf9e9ed21173cac2",
+      "X-Forwarded-For": "186.138.105.27, 130.176.27.80",
+      "X-Forwarded-Port": "443",
+      "X-Forwarded-Proto": "https"
+  },
+  "multiValueHeaders": {
+      "Accept": [
+          "*/*"
+      ],
+      "Accept-Encoding": [
+          "gzip, deflate"
+      ],
+      "Authorization": [
+          "Bearer test"
+      ],
+      "Cache-Control": [
+          "no-cache"
+      ],
+      "CloudFront-Forwarded-Proto": [
+          "https"
+      ],
+      "CloudFront-Is-Desktop-Viewer": [
+          "true"
+      ],
+      "CloudFront-Is-Mobile-Viewer": [
+          "false"
+      ],
+      "CloudFront-Is-SmartTV-Viewer": [
+          "false"
+      ],
+      "CloudFront-Is-Tablet-Viewer": [
+          "false"
+      ],
+      "CloudFront-Viewer-Country": [
+          "AR"
+      ],
+      "Content-Type": [
+          "text/html"
+      ],
+      "Host": [
+          "pdujhnan4l.execute-api.us-east-1.amazonaws.com"
+      ],
+      "Postman-Token": [
+          "ee9130c9-673e-4875-acf5-ef575c74b1cb"
+      ],
+      "User-Agent": [
+          "PostmanRuntime/7.19.0"
+      ],
+      "Via": [
+          "1.1 b463298bf3a0448826c5d55c212abc61.cloudfront.net (CloudFront)"
+      ],
+      "X-Amz-Cf-Id": [
+          "qZlX6G1K9vSfvj108_eozHm5xCdgGzR7xBe9ntumqnFPKAH80vpUvg=="
+      ],
+      "X-Amzn-Trace-Id": [
+          "Root=1-5dd1acab-04c419ceaf9e9ed21173cac2"
+      ],
+      "X-Forwarded-For": [
+          "186.138.105.27, 130.176.27.80"
+      ],
+      "X-Forwarded-Port": [
+          "443"
+      ],
+      "X-Forwarded-Proto": [
+          "https"
+      ]
+  },
+  "queryStringParameters": {
+      "expiration": "300",
+      "fileName": "test",
+      "margin": "1",
+      "pageFormat": "Legal"
+  },
+  "multiValueQueryStringParameters": {
+      "expiration": [
+          "300"
+      ],
+      "fileName": [
+          "test"
+      ],
+      "margin": [
+          "1"
+      ],
+      "pageFormat": [
+          "Legal"
+      ]
+  },
+  "pathParameters": {
+      "idTemplate": "name"
+  },
+  "stageVariables": {
+      "Environment": "dev"
+  },
+  "requestContext": {
+      "resourceId": "8jsegz",
+      "authorizer": {
+          "principalId": "user",
+          "integrationLatency": 74,
+          "token": "test"
+      },
+      "resourcePath": "/templates/{idTemplate}/pdf",
+      "operationName": "getTemplatePdf",
+      "httpMethod": "GET",
+      "extendedRequestId": "DUfqvEgcoAMF-wA=",
+      "requestTime": "17/Nov/2019:20:25:15 +0000",
+      "path": "/dev/templates/name/pdf",
+      "accountId": "960673230763",
+      "protocol": "HTTP/1.1",
+      "stage": "dev",
+      "domainPrefix": "pdujhnan4l",
+      "requestTimeEpoch": 1574022315030,
+      "requestId": "add9bd1f-44ee-4e0d-ae22-ee09e4cb3efb",
+      "identity": {
+          "cognitoIdentityPoolId": null,
+          "accountId": null,
+          "cognitoIdentityId": null,
+          "caller": null,
+          "sourceIp": "186.138.105.27",
+          "principalOrgId": null,
+          "accessKey": null,
+          "cognitoAuthenticationType": null,
+          "cognitoAuthenticationProvider": null,
+          "userArn": null,
+          "userAgent": "PostmanRuntime/7.19.0",
+          "user": null
+      },
+      "domainName": "pdujhnan4l.execute-api.us-east-1.amazonaws.com",
+      "apiId": "pdujhnan4l"
+  },
+  "body": null,
+  "isBase64Encoded": false
+}

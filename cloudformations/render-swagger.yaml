@@ -1,0 +1,151 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title:
+    Fn::Sub: ${Environment}-DocumentManagementRenderApi
+schemes:
+  - https
+x-amazon-apigateway-documentation:
+  version: 0.1
+  documentationParts:
+    - location:
+        type: API
+      properties:
+        description: Render API
+        info:
+          description: API that receives an html an converts it to pdf
+          version: 0.1
+paths:
+  /render:
+    post:
+      tags:
+        - HTML2PDF
+      description: Render Html to Pdf
+      operationId: render
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      security:
+        - LambdaAuth: []
+      parameters:
+        - in: body
+          name: htmlData
+          schema:
+            $ref: "#/definitions/SchemaHtmlRender"
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HtmlRender.Arn}/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        '200':
+          description: Respuesta Ok
+          schema:
+            $ref: "#/definitions/SchemaRenderOk"
+        '500':
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
+    options:
+      tags:
+        - HTML2PDF
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Headers:
+              type: string
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: "{}\n"
+        passthroughBehavior: when_no_match
+        requestTemplates:
+          application/json: "{\n  \"statusCode\" : 200\n}\n"
+        type: mock
+
+definitions:
+  SchemaHtmlRender:
+    type: object
+    properties:
+      html:
+        type: string
+        required: true
+        description: HTML to be converted to PDF
+      expiration:
+        type: number
+        required: true
+        description: Expiration for the S3 Signed URL
+      pageFormat:
+        type: string
+        required: true
+        enum: [A3,A4,A5,Letter,Legal]
+        description: Type of page
+      margin:
+        type: number
+        required: true
+        description: Margin of each border
+      fileName:
+        type: string
+        description: Optional name for the file (if the name already exists in the bucket, it will be replaced)
+        
+  SchemaRenderOk:
+    type: object
+    properties:
+      url:
+        type: string        
+
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
+        
+x-amazon-apigateway-request-validators:
+  Validate-Body:
+    validateRequestParameters: false
+    validateRequestBody: true
+  Validate-Params:
+    validateRequestParameters: true
+    validateRequestBody: false
+  all:
+    validateRequestParameters: true
+    validateRequestBody: true
+
+securityDefinitions:
+  LambdaAuth:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "custom"
+    x-amazon-apigateway-authorizer:
+      type: "request"
+      identitySource: "method.request.header.Authorization"
+      authorizerResultTtlInSeconds: 0
+      authorizerCredentials: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      authorizerUri:
+        Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizerFunction.Arn}/invocations"
+      authorizerUri:
+        Fn::Join:
+          - ""
+          - - Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/'
+            - Fn::GetAtt: [ AuthorizerFunction, Arn ]
+            - Fn::Sub: '/invocations'

@@ -1,0 +1,297 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Document Management Security
+
+Parameters:
+  UUID:
+    Type: String
+  Environment:
+    Type: String
+  Project:
+    Type: String
+  DeployBucket:
+    Type: String
+  Bucket:
+    Type: String
+    Default: documents-bucket-fp95
+
+Globals:
+  Function:
+    Runtime: nodejs10.x
+    AutoPublishAlias: 
+      Ref: Environment
+
+Resources:
+  RenderRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName:
+        Ref: Environment
+      Variables:
+        Environment:
+          Ref: Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location:
+              Fn::Sub: s3://${DeployBucket}/${Environment}-render-swagger-${UUID}.yaml
+  
+  HtmlRender:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/htmlRender
+      FunctionName:
+        Fn::Sub: ${Environment}-${Project}-HtmlRender
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          BUCKET:
+            Ref: Bucket
+  HtmlRenderPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt: HtmlRender.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RenderRestApi}/*/POST/render
+
+  TemplatesRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName:
+        Ref: Environment
+      Variables:
+        Environment:
+          Ref: Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location:
+              Fn::Sub: s3://${DeployBucket}/${Environment}-html-swagger-${UUID}.yaml
+  
+  GetTemplatePdf:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/getTemplatePdf
+      FunctionName: 
+        Fn::Sub: ${Environment}-${Project}-GetTemplatePdf
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          API:
+            Fn::Sub: "https://${RenderRestApi}.execute-api.${AWS::Region}.amazonaws.com/${RenderRestApi.Stage}/"
+          TEMPLATE_TABLE:
+            Ref: TemplatesTable
+  GetTemplatePdfPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt: GetTemplatePdf.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TemplatesRestApi}/*/GET/templates/{idTemplate}/pdf
+
+  GetTemplate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/getTemplate
+      FunctionName:
+        Fn::Sub: ${Environment}-${Project}-GetTemplate
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          TEMPLATE_TABLE:
+            Ref: TemplatesTable
+  GetTemplatePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt: GetTemplate.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TemplatesRestApi}/*/GET/templates/{idTemplate}
+
+  PutTemplate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/putTemplate
+      FunctionName:
+        Fn::Sub: ${Environment}-${Project}-PutTemplate
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          TEMPLATE_TABLE:
+            Ref: TemplatesTable
+  PutTemplatePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt: PutTemplate.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TemplatesRestApi}/*/PUT/templates/{idTemplate}
+
+  PostTemplate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/postTemplate
+      FunctionName:
+        Fn::Sub: ${Environment}-${Project}-PostTemplate
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          TEMPLATE_TABLE:
+            Ref: TemplatesTable
+  PostTemplatePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt: PostTemplate.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TemplatesRestApi}/*/POST/templates
+
+  DeleteTemplate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/deleteTemplate
+      FunctionName:
+        Fn::Sub: ${Environment}-${Project}-DeleteTemplate
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          TEMPLATE_TABLE:
+            Ref: TemplatesTable
+  DeleteTemplatePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt: DeleteTemplate.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TemplatesRestApi}/*/DELETE/templates/{idTemplate}
+
+  FilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketName:
+        Ref: Bucket
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET,PUT]
+            AllowedOrigins: ['*']
+            Id: myCORSRuleId1
+            MaxAge: '3600'
+  FilesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket:
+        Ref: FilesBucket
+      PolicyDocument: 
+        Statement: 
+          - 
+            Action: 
+              - "s3:GetObject*"
+              - "s3:PutObject*"
+            Effect: "Allow"
+            Resource:
+              Fn::Sub: "arn:aws:s3:::${Bucket}/*"
+            Principal:
+              AWS:
+                Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+
+  TemplatesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName:
+        Fn::Join:
+          - ""
+          - - Ref: Environment
+            - "Templates"
+      PrimaryKey:
+        Name: idTemplate
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  ApiKeysTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName:
+        Fn::Join:
+          - ""
+          - - Ref: Environment
+            - "ApiKeys"
+      PrimaryKey:
+        Name: key
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 512
+      CodeUri: ../functions/authorizer
+      FunctionName:
+        Fn::Sub: ${Environment}-${Project}-Authorizer
+      Role: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      Environment:
+        Variables:
+          ENV:
+            Ref: Environment
+          KEYS_TABLE:
+            Ref: ApiKeysTable

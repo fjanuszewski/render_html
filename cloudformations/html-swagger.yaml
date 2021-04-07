@@ -1,0 +1,280 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title:
+    Fn::Sub: ${Environment}-DocumentManagementHtmlApi
+schemes:
+  - https
+x-amazon-apigateway-documentation:
+  version: 0.1
+  documentationParts:
+    - location:
+        type: API
+      properties:
+        description: Html API
+        info:
+          description: API that receives an id template an converts it to pdf
+          version: 0.1
+paths:
+  /templates:
+    post:
+      tags:
+        - templates
+      description: Create html template
+      operationId: postTemplate
+      consumes:
+        - text/html
+      produces:
+        - application/json
+      security:
+        - LambdaAuth: []
+      parameters:
+        - in: query
+          name: idTemplate
+          required: true
+          description: Id template
+        - in: body
+          name: html
+          required: true
+          description: HTML file
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostTemplate.Arn}/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        '200':
+          description: Respuesta Ok
+          schema:
+            $ref: "#/definitions/SchemaTemplate"
+        '500':
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
+    options:
+      tags:
+        - templates
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Headers:
+              type: string
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: "{}\n"
+        passthroughBehavior: when_no_match
+        requestTemplates:
+          application/json: "{\n  \"statusCode\" : 200\n}\n"
+        type: mock
+  /templates/{idTemplate}:
+    get:
+      tags:
+        - templates
+      description: Get html template
+      operationId: getTemplate
+      produces:
+        - application/json
+      security:
+        - LambdaAuth: []
+      parameters:
+        - in: path
+          name: idTemplate
+          required: true
+          description: Id template
+      x-amazon-apigateway-request-validator: "Validate-Params"
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTemplate.Arn}/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        '200':
+          description: Respuesta Ok
+          schema:
+            $ref: "#/definitions/SchemaTemplate"
+        '500':
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"  
+    put:
+      tags:
+        - templates
+      description: Update html template
+      operationId: putTemplate
+      consumes:
+        - text/html
+      produces:
+        - application/json
+      security:
+        - LambdaAuth: []
+      parameters:
+        - in: path
+          name: idTemplate
+          required: true
+          description: Id template
+        - in: body
+          name: html
+          required: true
+          description: HTML file
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutTemplate.Arn}/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        '200':
+          description: Respuesta Ok
+          schema:
+            $ref: "#/definitions/SchemaTemplate"
+        '500':
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"  
+    delete:
+      tags:
+        - templates
+      description: Delete html template
+      operationId: deleteTemplate
+      produces:
+        - application/json
+      security:
+        - LambdaAuth: []
+      parameters:
+        - in: path
+          name: idTemplate
+          required: true
+          description: Id template
+      x-amazon-apigateway-request-validator: "Validate-Params"
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteTemplate.Arn}/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        '200':
+          description: Respuesta Ok
+        '500':
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"  
+  /templates/{idTemplate}/pdf:
+    get:
+      tags:
+        - templates
+      description: Get html template as pdf
+      operationId: getTemplatePdf
+      produces:
+        - application/json
+      security:
+        - LambdaAuth: []
+      parameters:
+        - in: path
+          name: idTemplate
+          required: true
+          description: Id template
+        - in: query
+          name: expiration
+          type: string
+          description: Expiration for the S3 Signed URL
+        - in: query
+          name: pageFormat
+          type: string
+          enum: [A3,A4,A5,Letter,Legal]
+          description: Type of page
+        - in: query
+          name: margin
+          type: string
+          description: Margin of each border
+        - in: query
+          name: fileName
+          type: string
+          description: Optional name for the file (if the name already exists in the bucket, it will be replaced)
+      x-amazon-apigateway-request-validator: "Validate-Params"
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTemplatePdf.Arn}/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: POST
+        type: aws_proxy
+      responses:
+        '200':
+          description: Respuesta Ok
+          schema:
+            $ref: "#/definitions/SchemaHtml2PdfOk"
+        '500':
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
+
+definitions:
+  SchemaHtml2PdfOk:
+    type: object
+    properties:
+      url:
+        type: string 
+
+  SchemaTemplate:
+    type: object
+    properties:
+      idTemplate:
+        type: string
+      html:
+        type: string        
+
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
+        
+x-amazon-apigateway-request-validators:
+  Validate-Body:
+    validateRequestParameters: false
+    validateRequestBody: true
+  Validate-Params:
+    validateRequestParameters: true
+    validateRequestBody: false
+  all:
+    validateRequestParameters: true
+    validateRequestBody: true
+
+securityDefinitions:
+  LambdaAuth:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "custom"
+    x-amazon-apigateway-authorizer:
+      type: "request"
+      identitySource: "method.request.header.Authorization"
+      authorizerResultTtlInSeconds: 0
+      authorizerCredentials: 
+        Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/${Environment}-${Project}-Role"
+      authorizerUri:
+        Fn::Join:
+          - ""
+          - - Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/'
+            - Fn::GetAtt: [ AuthorizerFunction, Arn ]
+            - Fn::Sub: '/invocations'
